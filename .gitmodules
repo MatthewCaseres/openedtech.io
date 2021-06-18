@@ -1,0 +1,3 @@
+[submodule "public/AWS-Notes"]
+	path = public/AWS-Notes
+	url = https://github.com/MatthewCaseres/AWS-Notes

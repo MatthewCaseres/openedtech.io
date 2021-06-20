@@ -10,47 +10,6 @@ type CardProps = {
   title: string;
   route: string;
 };
-const cardsInfo = [
-  {
-    resource: "/bible.svg",
-    title: "KJV Bible",
-    owner: "Arley McBlain",
-    route: "arleym/kjv-markdown/01 - Genesis - KJV.md",
-  },
-  {
-    resource: "/operating-system.svg",
-    title: "Operating Systems",
-    owner: "Matt Schlenker",
-    route: "m4ttsch/omscs-notes-notes/operating-systems/introduction-to-operating-systems.md",
-  },
-];
-function Card({ resource, owner, title, route }: CardProps) {
-  return (
-    <div className="flex flex-col m-2 border border-gray-300 dark:bg-gray-700 shadow-lg hover:shadow-2xl dark:border-gray-600 rounded-md">
-      <Link href={route}>
-        <a className="dark:hover:bg-indigo-900 flex-1 flex flex-row px-4 py-6">
-          <Image src={resource} width="85" height="85" />
-          <div className=" m-auto">
-            <div className="text-3xl text-gray-900 dark:text-white">
-              {title}
-            </div>
-          </div>
-        </a>
-      </Link>
-      <div className="text-sm font-light p-1 bg-gray-100 dark:bg-gray-800 dark:text-gray-300 rounded-md">
-        Maintainer - {}
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://github.com/Open-EdTech"
-          className="underline text-blue-400 dark:text-blue-600"
-        >
-          {owner}
-        </a>
-      </div>
-    </div>
-  );
-}
 
 function BigCard({ resource, owner, title, route }: CardProps) {
   return (
@@ -197,17 +156,6 @@ export default function Index() {
               route: "Open-EdTech/AWS-Associate-Notes/EC2.md",
             }}
           />
-        </div>
-        <div className="self-center text-center dark:text-white my-8">
-          <div>Make books from any public markdown files on GitHub.</div>
-          <div className="font-extralight">
-            You don't even have to make a fork.
-          </div>
-        </div>
-        <div className="grid md:grid-cols-2 grid-cols-1 mx-5 max-w-xl">
-          {cardsInfo.map((props) => (
-            <Card {...props} />
-          ))}
         </div>
         <div className="font-extralight self-center text-center mt-8">
           Like the site? Build your own.

@@ -1,9 +1,13 @@
 import NextAuth from 'next-auth'
 import Providers from 'next-auth/providers'
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
+import prisma from '../../../lib/prisma'
 
-const prisma = new PrismaClient()
+const callbacks = {
+  session: async (session, user) => {
+    return Promise.resolve({...session, id: user.id})
+  }
+}
 
 export default NextAuth({
   // Configure one or more authentication providers
@@ -22,6 +26,7 @@ export default NextAuth({
     // ...add more providers here
   ],
   adapter: PrismaAdapter(prisma),
+  callbacks,
 
   // A database is optional, but required to persist accounts in a database
   database: process.env.DATABASE_URL,

@@ -3,24 +3,26 @@ import SideBar from "../components/SideBar/SideBar";
 import { getMdSource, getAllRoutesInfo } from "github-books";
 import Link from "next/link";
 import bookConfig from "../bookConfig.json";
-import bookPageHeadings from '../bookPageHeadings.json'
+import bookPageHeadings from "../bookPageHeadings.json";
 import matter from "gray-matter";
 import slug from "remark-slug";
-import ReactMarkdown from 'react-markdown';
-import withNextImages from '../remark/withNextImages'
-import { serialize } from 'next-mdx-remote/serialize'
-import { MDXRemote } from 'next-mdx-remote'
+import withNextImages from "../remark/withNextImages";
+import withMCQ from "../remark/withMCQ";
+import { serialize } from "next-mdx-remote/serialize";
+import { MDXRemote } from "next-mdx-remote";
+import { useSession } from "next-auth/client";
+import MCQ from "../components/MCQ";
+
+const components = { MCQ };
 
 function Post({ urlTree, mdxSource, ghUrl, treePath, prevNext, headings }) {
   return (
     <SideBarProvider config={urlTree.children}>
       <SideBar ghUrl={ghUrl} treePath={treePath} headings={headings}>
-        <div className="my-5 px-8 pt-5 pb-2 bg-white shadow-md dark:bg-gray-900 rounded-xl max-w-2xl">
+        <div className=" my-5 px-8 pt-5 pb-2 bg-white shadow-md dark:bg-gray-900 rounded-xl max-w-2xl">
           <div className="prose dark:prose-dark">
-          <MDXRemote {...mdxSource} />
-          {/* <ReactMarkdown remarkPlugins={[withNextImages, slug]} children={content}/> */}
+            <MDXRemote {...mdxSource} components={components} />
           </div>
-          {/* <div className="prose dark:prose-dark">{content}</div> */}
           <Cards prevNext={prevNext} />
         </div>
       </SideBar>
@@ -32,14 +34,14 @@ export const getStaticProps = async ({ params }) => {
   const allRoutesInfo = getAllRoutesInfo(bookConfig);
   const stringRoute = params.id.join("/");
   const flatNode = allRoutesInfo[stringRoute];
-  if (flatNode === undefined){
+  if (flatNode === undefined) {
     return {
-      notFound: true
-    }
+      notFound: true,
+    };
   }
-  const { index: nodeIndex, ghUrl, treePath, prev, next, route} = flatNode;
+  const { index: nodeIndex, ghUrl, treePath, prev, next, route } = flatNode;
 
-  const headings = bookPageHeadings[route]
+  const headings = bookPageHeadings[route];
 
   const prevNext = { prev: prev ?? null, next: next ?? null };
   const urlTree = bookConfig[nodeIndex];
@@ -47,11 +49,11 @@ export const getStaticProps = async ({ params }) => {
   const { content } = matter(source);
   const mdxSource = await serialize(content, {
     mdxOptions: {
-      remarkPlugins: [withNextImages, slug]
-    }
-  })
+      remarkPlugins: [withNextImages, withMCQ, slug],
+    },
+  });
   return {
-    props: { urlTree, mdxSource, ghUrl, treePath, prevNext, headings }, // will be passed to the page component as props
+    props: { urlTree, content, mdxSource, ghUrl, treePath, prevNext, headings }, // will be passed to the page component as props
   };
 };
 
@@ -63,15 +65,14 @@ export const getStaticPaths = async () => {
         id: routeString.split("/"),
       },
     })),
-    fallback: false
+    fallback: false,
   };
 };
-
 
 function Cards({ prevNext }) {
   return (
     <div className="grid grid-cols-2 gap-1 my-5">
-      <div >
+      <div>
         <Card left info={prevNext.prev} />
       </div>
       <div>
@@ -115,18 +116,39 @@ function Card({ left, info }) {
 function Arrow({ left }) {
   if (left) {
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-</svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
     );
   } else {
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-</svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 5l7 7-7 7"
+        />
+      </svg>
     );
   }
 }
-
 
 export default Post;

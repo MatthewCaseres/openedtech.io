@@ -1,6 +1,5 @@
 module.exports = {
   darkMode: "class",
-  mode: "jit",
   purge: ["./pages/**/*.js", "./pages/**/*.tsx", "./components/**/*.tsx", "./components/**/*.js"],
   theme: {
     extend: {
@@ -93,5 +92,5 @@ module.exports = {
     },
     
   },
-  plugins: [require("@tailwindcss/typography"), require("tailwind-scrollbar")],
+  plugins: [require("@tailwindcss/typography"), require("tailwind-scrollbar"), require("@tailwindcss/forms")],
 };

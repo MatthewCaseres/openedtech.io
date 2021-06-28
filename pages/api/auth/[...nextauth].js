@@ -1,27 +1,29 @@
-import NextAuth from 'next-auth'
-import Providers from 'next-auth/providers'
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import prisma from '../../../lib/prisma'
+import NextAuth from "next-auth";
+import Providers from "next-auth/providers";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import prisma from "../../../lib/prisma";
 
 const callbacks = {
   session: async (session, user) => {
-    return Promise.resolve({...session, id: user.id})
-  }
-}
+    const id = user.id;
+    return Promise.resolve({ ...session, id });
+  },
+};
 
 export default NextAuth({
   // Configure one or more authentication providers
   providers: [
-    Providers.Email({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD
-        }
+    Providers.GitHub({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
+      profile(profile) {
+        return {
+          id: profile.id.toString(),
+          name: profile.name || profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+        };
       },
-      from: process.env.EMAIL_FROM
     }),
     // ...add more providers here
   ],
@@ -30,4 +32,4 @@ export default NextAuth({
 
   // A database is optional, but required to persist accounts in a database
   database: process.env.DATABASE_URL,
-})
+});

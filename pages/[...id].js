@@ -8,12 +8,14 @@ import matter from "gray-matter";
 import slug from "remark-slug";
 import withNextImages from "../remark/withNextImages";
 import withMCQ from "../remark/withMCQ";
+import withYouTube from "../remark/withYouTube";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
 import { useSession } from "next-auth/client";
 import MCQ from "../components/MCQ";
+import ReactPlayer from "react-player/youtube";
 
-const components = { MCQ };
+const components = { MCQ, ReactPlayer };
 
 function Post({ urlTree, mdxSource, ghUrl, treePath, prevNext, headings }) {
   return (
@@ -49,7 +51,7 @@ export const getStaticProps = async ({ params }) => {
   const { content } = matter(source);
   const mdxSource = await serialize(content, {
     mdxOptions: {
-      remarkPlugins: [withNextImages, withMCQ, slug],
+      remarkPlugins: [withYouTube, withNextImages, withMCQ, slug],
     },
   });
   return {

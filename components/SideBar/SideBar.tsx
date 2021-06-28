@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { useSideBarState, useSideBarDispatch } from "./SideBarContext";
+import {
+  useSideBarState,
+  useSideBarDispatch,
+  StatefulNodes,
+} from "./SideBarContext";
 import RenderNode from "./RenderNode";
-import MenuIcon from "@material-ui/icons/Menu";
-import SideBarTop from "./SideBarTop";
 import { HeadersConfig } from "../../bookConfig";
 import DoubleChevron from "./DoubleChevron";
-import Link from "next/link";
+import Login from "./Login";
+import SideBarTop from "./SideBarTop";
 
 const SideBar: React.FC<{
   ghUrl: string;
@@ -33,14 +36,9 @@ const SideBar: React.FC<{
             className="h-screen fixed lg:sticky top-0 bg-gray-100 overflow-y-auto z-10 dark:bg-black dark:scrollbar-thumb-gray-700 scrollbar-thumb-gray-300 scrollbar-track-gray-200 scrollbar-thin dark:scrollbar-track-gray-500 dark:scrollbar-blue-700"
             style={{ width: width, minWidth: width }}
           >
-            {/* <SideBarTop setPagesVisible={setPagesVisible} ghUrl={ghUrl} /> */}
-
-            <div className="ml-1 mb-10">
-              <Edit ghUrl={ghUrl} />
-              {sideBarState.map((node, index) => (
-                <RenderNode key={index} node={node} pagePath={treePath} />
-              ))}
-            </div>
+            {/* <Login></Login> */}
+            <SideBarTop pagePath={treePath} />
+            <LeftNav sideBarState={sideBarState} treePath={treePath} />
             <div
               className="fixed flex justify-center group bottom-0 z-10 bg-gray-300 group-hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-800 rounded p-1 cursor-pointer"
               onClick={() => setPagesVisible((pagesVisible) => !pagesVisible)}
@@ -56,7 +54,7 @@ const SideBar: React.FC<{
           }`}
         >
           <div
-            className="fixed group bottom-3 left-3 bg-gray-300 group-hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-800 rounded p-2 cursor-pointer"
+            className="fixed group bottom-3 left-3 z-10 bg-gray-300 group-hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-800 rounded p-2 cursor-pointer"
             onClick={() => setPagesVisible((pagesVisible) => !pagesVisible)}
           >
             <DoubleChevron leftRight="right" />
@@ -70,6 +68,7 @@ const SideBar: React.FC<{
         >
           <div className=" w-48 h-screen fixed md:sticky top-0 right-0 bg-gray-100 overflow-y-auto z-10 dark:bg-black dark:scrollbar-thumb-gray-700 scrollbar-thumb-gray-300 scrollbar-track-gray-200 scrollbar-thin dark:scrollbar-track-gray-500 dark:scrollbar-blue-700">
             <div className=" mx-3 mt-8 mb-10">
+              <Edit ghUrl={ghUrl} />
               {headings.map((heading) => (
                 <div className={heading.depth == 3 ? "ml-3" : ""}>
                   <a
@@ -129,6 +128,22 @@ function Edit({ ghUrl }: { ghUrl: string }) {
         <div className="ml-2 font-light underline">Edit this page</div>
       </div>
     </a>
+  );
+}
+
+function LeftNav({
+  sideBarState,
+  treePath,
+}: {
+  sideBarState: StatefulNodes;
+  treePath: readonly number[];
+}) {
+  return (
+    <div className="ml-1 mb-10">
+      {sideBarState.map((node, index) => (
+        <RenderNode key={index} node={node} pagePath={treePath} />
+      ))}
+    </div>
   );
 }
 

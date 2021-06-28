@@ -5,24 +5,36 @@ import {
   useState,
   SetStateAction,
   Dispatch,
+  useEffect,
 } from "react";
 import produce, { Draft } from "immer";
 import { UrlNode } from "github-books";
-export type UserInfo = { completed: boolean; flagged: number };
-export type IdMap = Partial<Record<string, UserInfo>>;
+import axios from "axios";
+import { useQuery, useQueryClient, useMutation } from "react-query";
+
+export type Problem = { id: string; color: number };
+export type IdMap = Partial<Record<string, Problem>>;
 export type StatefulNode = Readonly<Omit<UrlNode, "children" | "treePath">> &
   Readonly<{
-    id?: string;
-    open?: boolean;
-    treePath: ReadonlyArray<number>;
-    userInfo?: UserInfo;
     children?: ReadonlyArray<StatefulNode>;
+    open?: boolean;
+    hidden?: boolean;
+    problemsVisible?: boolean;
+    treePath: ReadonlyArray<number>;
+    problems?: readonly Problem[];
   }>;
-type StatefulNodes = ReadonlyArray<StatefulNode>;
+export type StatefulNodes = ReadonlyArray<StatefulNode>;
 type Action =
   | { type: "open"; path: readonly number[] }
   | { type: "close"; path: readonly number[] }
-  | {type: "expand"} | {type: "collapse"}
+  | {
+      type: "toggleProblemVisibility";
+      path: readonly number[];
+      value?: boolean;
+    }
+  | { type: "expand" }
+  | { type: "collapse" }
+  | { type: "merge"; idMap: IdMap };
 type SideBarDispatch = (action: Action) => void;
 const SideBarVisibleContext = createContext<
   [boolean, Dispatch<SetStateAction<boolean>>] | undefined
@@ -31,6 +43,7 @@ const SideBarStateContext = createContext<StatefulNodes | undefined>(undefined);
 const SideBarDispatchContext = createContext<SideBarDispatch | undefined>(
   undefined
 );
+const IdMapContext = createContext<IdMap | undefined>(undefined);
 
 const sideBarReducer = produce(
   (draft: Draft<StatefulNodes>, action: Action) => {
@@ -56,37 +69,82 @@ const sideBarReducer = produce(
         }
         nodeClose.open = false;
         break;
+      case "toggleProblemVisibility":
+        if (action.path.length) {
+          let toggledNode = draft[action.path[0]];
+          for (let i = 1; i < action.path.length; i++) {
+            toggledNode = toggledNode.children![action.path[i]];
+          }
+          toggledNode.problemsVisible =
+            action.value ?? !toggledNode.problemsVisible;
+        }
+        break;
+      case "merge":
+        draft.forEach((node) => mergeIdMap(node, action.idMap));
+        break;
+      case "expand":
+        draft.forEach((node) => expandAll(node));
+        break;
+      case "collapse":
+        draft.forEach((node) => collapseAll(node));
+        break;
     }
   }
 );
 
-const SideBarProvider: React.FC<{ config: StatefulNodes, treePath: readonly number[] }> = ({
-  children,
-  config,
-  treePath
-}) => {
+const SideBarProvider: React.FC<{
+  config: StatefulNodes;
+  treePath: readonly number[];
+}> = ({ children, config, treePath }) => {
   const [state, dispatch] = useReducer(sideBarReducer, config);
   const [visible, setVisible] = useState(true);
-  // const { loading, error, data } = useQuery(GET_PROBLEMS);
+  // this and the next useEffect is creating/maintaining the problems in the nav
+  const [idMap, setIdMap] = useState({});
+  const { data } = useQuery<Problem[], Error>("problems", async () => {
+    const { data } = await axios.get("/api/problems");
+    return data;
+  });
+  // Merge in the changes whenever they happen
+  useEffect(() => {
+    if (data) {
+      const newIdMap = (data as Problem[]).reduce((idAccum, problem) => {
+        const { color, id } = problem;
+        return { ...idAccum, ...{ [id]: { color } } };
+      }, {});
+      setIdMap(newIdMap);
+      dispatch({ type: "merge", idMap: newIdMap });
+    }
+  }, [data]);
   return (
     <SideBarStateContext.Provider value={state}>
       <SideBarDispatchContext.Provider value={dispatch}>
         <SideBarVisibleContext.Provider value={[visible, setVisible]}>
-              {children}
+          <IdMapContext.Provider value={idMap}>
+            {children}
+          </IdMapContext.Provider>
         </SideBarVisibleContext.Provider>
       </SideBarDispatchContext.Provider>
     </SideBarStateContext.Provider>
   );
 };
 
-function useSideBarState() {
+export function useProblemColor(id: string) {
+  const context = useContext(IdMapContext);
+  if (context === undefined) {
+    throw new Error("useProblemColor must be used within a SidebarProvider");
+  }
+  const color = context[id]?.color ?? 0;
+  return color;
+}
+
+export function useSideBarState() {
   const context = useContext(SideBarStateContext);
   if (context === undefined) {
     throw new Error("useSideBarState must be used within a SidebarProvider");
   }
   return context;
 }
-function useSideBarDispatch() {
+export function useSideBarDispatch() {
   const context = useContext(SideBarDispatchContext);
   if (context === undefined) {
     throw new Error("useSideBarDispatch must be used within a SidebarProvider");
@@ -94,8 +152,27 @@ function useSideBarDispatch() {
   return context;
 }
 
-export {
-  SideBarProvider,
-  useSideBarState,
-  useSideBarDispatch,
-};
+function mergeIdMap(node: Draft<StatefulNode>, idMap: IdMap) {
+  node.problems?.forEach((problem) => {
+    if (problem.id in idMap) {
+      problem.color = idMap[problem.id]!.color;
+    } else {
+      problem.color = 0;
+    }
+  });
+  node.children?.forEach((child) => mergeIdMap(child, idMap));
+}
+
+function expandAll(node: Draft<StatefulNode>) {
+  node.open = true;
+  node.problemsVisible = true;
+  node.children?.forEach((child) => expandAll(child));
+}
+
+function collapseAll(node: Draft<StatefulNode>) {
+  node.open = false;
+  node.problemsVisible = false;
+  node.children?.forEach((child) => collapseAll(child));
+}
+
+export { SideBarProvider };

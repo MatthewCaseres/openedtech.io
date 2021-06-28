@@ -88,7 +88,7 @@ module.exports = {
     scrollbar: ["dark"],
     extend: {
       typography: ["dark"],
-      borderWidth: ["last"]
+      borderWidth: ["last"],
     },
     
   },

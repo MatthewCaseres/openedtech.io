@@ -11,7 +11,6 @@ import withMCQ from "../remark/withMCQ";
 import withYouTube from "../remark/withYouTube";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
-import { useSession } from "next-auth/client";
 import MCQ from "../components/MCQ";
 import ReactPlayer from "react-player/youtube";
 
@@ -47,7 +46,7 @@ export const getStaticProps = async ({ params }) => {
 
   const prevNext = { prev: prev ?? null, next: next ?? null };
   const urlTree = bookConfig[nodeIndex];
-  const source = await getMdSource(flatNode, true);
+  const source = await getMdSource(flatNode, false);
   const { content } = matter(source);
   const mdxSource = await serialize(content, {
     mdxOptions: {

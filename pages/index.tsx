@@ -153,7 +153,7 @@ export default function Index() {
               resource: "/cloud-network2.svg",
               title: "AWS Study Guide",
               owner: "Open EdTech",
-              route: "Open-EdTech/AWS-Associate-Notes/EC2.md",
+              route: "MatthewCaseres/AWS-Notes/Tutorial.md",
             }}
           />
         </div>
@@ -164,7 +164,8 @@ export default function Index() {
           target="_blank"
           rel="noopener noreferrer"
           href="https://github.com/MatthewCaseres/markdownbooks.com"
-          className="mt-3 mb-12 self-center bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">
+          className="mt-3 mb-12 self-center bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+        >
           View on GitHub
         </a>
       </div>

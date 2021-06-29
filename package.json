@@ -8,10 +8,8 @@
     "build": "next build",
     "start": "next start",
     "export": "next export",
-    "generate": "npm -s run generate:prisma && npm -s run generate:nexus",
-    "generate:prisma": "prisma generate",
-    "generate:nexus": "ts-node --transpile-only -P nexus.tsconfig.json pages/api",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "vercel-build": "prisma migrate deploy && next build",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",

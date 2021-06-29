@@ -16,6 +16,7 @@ export default NextAuth({
     Providers.GitHub({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
+      scope: "user:email",
       profile(profile) {
         return {
           id: profile.id.toString(),

@@ -32,10 +32,6 @@ const headersAndProblemsFunction: UserFunction = ({ treeNode, mdast }) => {
 };
 
 (async () => {
-  // const tsTree = await summaryToUrlTree({
-  //   url: "https://github.com/basarat/typescript-book/blob/master/SUMMARY.md",
-  //   userFunction: headersFunction
-  // })
   const awsTree = await summaryToUrlTree({
     url: "https://github.com/MatthewCaseres/AWS-Notes/blob/main/source/00-index.md",
     localPath:
@@ -44,5 +40,4 @@ const headersAndProblemsFunction: UserFunction = ({ treeNode, mdast }) => {
   });
   fs.writeFileSync("bookPageHeadings.json", JSON.stringify(allHeaders));
   fs.writeFileSync("bookConfig.json", JSON.stringify([awsTree]));
-  // fs.writeFileSync('bookConfig.json', JSON.stringify([awsTree]))
 })();
